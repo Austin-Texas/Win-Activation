@@ -1,117 +1,88 @@
 @echo off
-title Hasten Universal Runner - Auto Cleanup + Loading Bar
+title Hasten Runner - Activation / Diagnostic
 color 0A
-
-REM ============================================================
-REM   UNIVERSAL DOWNLOADS FOLDER
-REM ============================================================
 set DOWNLOADS=%USERPROFILE%\Downloads
 
 REM ============================================================
-REM   GITHUB RAW LINKS
+REM AUTO-DOWNLOAD ALL SCRIPTS ON START
 REM ============================================================
-set ACTIVATE_URL=https://raw.githubusercontent.com/Austin-Texas/Win-Activation/main/activate.cmd
-set DIAG_URL=https://raw.githubusercontent.com/Austin-Texas/Win-Activation/main/diagnostic.cmd
+cls
+echo Downloading runner script...
+powershell -Command "Invoke-WebRequest -UseBasicParsing 'https://raw.githubusercontent.com/Austin-Texas/Win-Activation/main/Run-Activate-Diagnostic-Cleanup.cmd' -OutFile $env:USERPROFILE\Downloads\Run.cmd"
+
+echo Downloading activation script...
+powershell -Command "Invoke-WebRequest -UseBasicParsing 'https://raw.githubusercontent.com/Austin-Texas/Win-Activation/main/activate.cmd' -OutFile $env:USERPROFILE\Downloads\activate.cmd"
+
+echo Downloading diagnostic script...
+powershell -Command "Invoke-WebRequest -UseBasicParsing 'https://raw.githubusercontent.com/Austin-Texas/Win-Activation/main/diagnostic.cmd' -OutFile $env:USERPROFILE\Downloads\diagnostic.cmd"
+
+echo.
+echo All scripts downloaded successfully.
+ping -n 2 127.0.0.1 >nul
 
 REM ============================================================
-REM   LOADING BAR FUNCTION
-REM ============================================================
-:loading
-setlocal enabledelayedexpansion
-set BAR=
-for /L %%i in (1,1,30) do (
-    set BAR=!BAR!#
-    cls
-    echo.
-    echo Downloading... Please wait.
-    echo.
-    echo [!BAR!]
-    ping -n 1 127.0.0.1 >nul
-)
-endlocal
-
-goto :eof
-
-REM ============================================================
-REM   MENU
+REM MAIN MENU
 REM ============================================================
 :menu
 cls
-echo ============================================================
-echo              HASTEN SCRIPT RUNNER - MENU
-echo ============================================================
+echo ==========================================
+echo        HASTEN SCRIPT RUNNER - MENU
+echo ==========================================
 echo.
-echo  [1] Run Activation Script
-echo  [2] Run Diagnostic / Cleanup Script
-echo  [3] Run BOTH (Activation + Diagnostic)
-echo  [4] Exit
+echo  [1] Run Activation
+echo  [2] Run Diagnostic
+echo  [3] Run BOTH
+echo  [Q] Quit (Delete all scripts)
 echo.
-set /p choice=Select an option (1-4): 
 
-if "%choice%"=="1" goto run_activate
-if "%choice%"=="2" goto run_diag
-if "%choice%"=="3" goto run_both
-if "%choice%"=="4" goto end
+choice /C 123Q /N /M "Select an option: "
+set choice=%errorlevel%
 
-echo Invalid choice. Try again.
-pause
+if %choice%==1 goto run_activation
+if %choice%==2 goto run_diagnostic
+if %choice%==3 goto run_both
+if %choice%==4 goto cleanup_and_exit
+
 goto menu
 
 REM ============================================================
-REM   DOWNLOAD FUNCTIONS WITH LOADING BAR
+REM ACTIONS
 REM ============================================================
-:download_activate
-call :loading
-powershell -command "(New-Object Net.WebClient).DownloadFile('%ACTIVATE_URL%', '%DOWNLOADS%\activate.cmd')"
-goto :eof
-
-:download_diag
-call :loading
-powershell -command "(New-Object Net.WebClient).DownloadFile('%DIAG_URL%', '%DOWNLOADS%\diagnostic.cmd')"
-goto :eof
-
-REM ============================================================
-REM   RUN OPTIONS
-REM ============================================================
-:run_activate
+:run_activation
 cls
 echo Running activation script...
-call :download_activate
 call "%DOWNLOADS%\activate.cmd"
-goto cleanup
+echo.
+echo Activation completed successfully.
+goto menu
 
-:run_diag
+:run_diagnostic
 cls
 echo Running diagnostic script...
-call :download_diag
 call "%DOWNLOADS%\diagnostic.cmd"
-goto cleanup
+echo.
+echo Diagnostic completed successfully.
+goto menu
 
 :run_both
 cls
 echo Running activation script...
-call :download_activate
-call "%DOWNLOADS%\activate.cmd"
+start "" /wait cmd /c "%DOWNLOADS%\diagnostic.cmd"
+echo Activation completed successfully.
 echo.
 echo Running diagnostic script...
-call :download_diag
 call "%DOWNLOADS%\diagnostic.cmd"
-goto cleanup
+echo Diagnostic completed successfully.
+goto menu
 
 REM ============================================================
-REM   FULL CLEANUP (OPTION C)
+REM CLEANUP ON QUIT
 REM ============================================================
-:cleanup
-echo.
-echo Cleaning up all downloaded files...
+:cleanup_and_exit
+cls
+echo Cleaning up all downloaded scripts...
 del "%DOWNLOADS%\activate.cmd" /f /q 2>nul
 del "%DOWNLOADS%\diagnostic.cmd" /f /q 2>nul
 del "%DOWNLOADS%\Run.cmd" /f /q 2>nul
-echo Cleanup complete.
-echo.
-pause
-goto menu
-
-:end
-echo Exiting...
+echo Cleanup complete. Exiting...
 exit
