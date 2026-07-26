@@ -20,7 +20,7 @@ REM ============================================================
 setlocal enabledelayedexpansion
 set BAR=
 for /L %%i in (1,1,30) do (
-    set BAR=!BAR!█
+    set BAR=!BAR!#
     cls
     echo.
     echo Downloading... Please wait.
@@ -29,6 +29,7 @@ for /L %%i in (1,1,30) do (
     ping -n 1 127.0.0.1 >nul
 )
 endlocal
+
 goto :eof
 
 REM ============================================================
