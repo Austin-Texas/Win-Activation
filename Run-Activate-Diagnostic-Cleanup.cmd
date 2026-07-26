@@ -1,9 +1,9 @@
 @echo off
-title Hasten Universal Runner - Auto Cleanup Edition
+title Hasten Universal Runner - Auto Cleanup + Loading Bar
 color 0A
 
 REM ============================================================
-REM   UNIVERSAL DOWNLOADS FOLDER (WORKS FOR ANY USER)
+REM   UNIVERSAL DOWNLOADS FOLDER
 REM ============================================================
 set DOWNLOADS=%USERPROFILE%\Downloads
 
@@ -12,6 +12,24 @@ REM   GITHUB RAW LINKS
 REM ============================================================
 set ACTIVATE_URL=https://raw.githubusercontent.com/Austin-Texas/Win-Activation/main/activate.cmd
 set DIAG_URL=https://raw.githubusercontent.com/Austin-Texas/Win-Activation/main/diagnostic.cmd
+
+REM ============================================================
+REM   LOADING BAR FUNCTION
+REM ============================================================
+:loading
+setlocal enabledelayedexpansion
+set BAR=
+for /L %%i in (1,1,30) do (
+    set BAR=!BAR!█
+    cls
+    echo.
+    echo Downloading... Please wait.
+    echo.
+    echo [!BAR!]
+    ping -n 1 127.0.0.1 >nul
+)
+endlocal
+goto :eof
 
 REM ============================================================
 REM   MENU
@@ -39,15 +57,15 @@ pause
 goto menu
 
 REM ============================================================
-REM   DOWNLOAD FUNCTIONS
+REM   DOWNLOAD FUNCTIONS WITH LOADING BAR
 REM ============================================================
 :download_activate
-echo Downloading activation script...
+call :loading
 powershell -command "(New-Object Net.WebClient).DownloadFile('%ACTIVATE_URL%', '%DOWNLOADS%\activate.cmd')"
 goto :eof
 
 :download_diag
-echo Downloading diagnostic script...
+call :loading
 powershell -command "(New-Object Net.WebClient).DownloadFile('%DIAG_URL%', '%DOWNLOADS%\diagnostic.cmd')"
 goto :eof
 
